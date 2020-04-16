@@ -1,0 +1,10 @@
+base
+knitr
+rmdformats
+ggplot2
+plotly
+dplyr
+leaflet
+rnoaa
+purrr
+leaflet.extras
