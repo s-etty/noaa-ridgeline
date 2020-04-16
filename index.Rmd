@@ -1,0 +1,58 @@
+---
+title: "Changing Temperatures in Portland, OR"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::material:
+    highlight: kate
+---
+
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+``` {r echo = FALSE, warning = FALSE, message = FALSE}
+library(plotly)
+library(dplyr)
+library(leaflet)
+library(leaflet.extras)
+library(rnoaa)
+library(purrr)
+
+avg_temp_data <- readr::read_csv('data/avg-temp-data.csv', col_names = TRUE)
+#pull in the data from the csv. To update run the get-data.r script in the data folder
+
+station_ids <- avg_temp_data %>%
+  distinct(avg_temp_data, id, .keep_all = TRUE) %>%
+  select(-c('date', 'tavg', 'distance'))
+#select the distinct station ids from the csv. only keep the id, name, lat, long
+
+```
+# NOAA Station
+
+Below are the stations the weather data will be pulled from. Click on each point to see more information about each station.
+
+``` {r echo = FALSE, warning = FALSE}
+station_map <- leaflet(station_ids) %>%
+  setView(lng = -122.6750, lat = 45.6081, zoom = 10) %>%
+  addTiles() %>%
+  addMarkers(lat = ~latitude, lng = ~longitude, popup =  ~name, label = ~name) %>%
+  suspendScroll(sleep = TRUE, sleepTime = 2000, wakeTime = 1000)
+#create a map centered around portland. markers are the stations. suspendScroll is not working
+station_map
+```
+
+# Average Temperature by Month
+
+Here are some stacked density plots, also known as a ridgeline plot of the average temperature each month over the years. The averages displayed are the averages from the four weather stations shown in the map.
