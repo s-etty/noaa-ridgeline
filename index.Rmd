@@ -1,6 +1,6 @@
 ---
 title: "Changing Temperatures in Portland, OR"
-date: "`r Sys.Date()`"
+date: "Last Update: `r Sys.Date()`"
 output:
   rmdformats::material:
     highlight: kate
