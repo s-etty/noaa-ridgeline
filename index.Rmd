@@ -41,7 +41,7 @@ station_ids <- avg_temp_data %>%
 ```
 # NOAA Station
 
-Below are the stations the weather data will be pulled from. Click on each point to see more information about each station.
+Below are the stations the weather data will be pulled from. Click on the points to see more information about each station.
 
 ``` {r echo = FALSE, warning = FALSE}
 station_map <- leaflet(station_ids) %>%
@@ -56,3 +56,9 @@ station_map
 # Average Temperature by Month
 
 Here are some stacked density plots, also known as a ridgeline plot of the average temperature each month over the years. The averages displayed are the averages from the four weather stations shown in the map.
+
+``` {r echo = FALSE, warning = FALSE}
+
+
+
+```
