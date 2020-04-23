@@ -29,6 +29,8 @@ library(leaflet)
 library(leaflet.extras)
 library(rnoaa)
 library(purrr)
+library(lubridate)
+library(ggplot2)
 
 avg_temp_data <- readr::read_csv('data/avg-temp-data.csv', col_names = TRUE)
 #pull in the data from the csv. To update run the get-data.r script in the data folder
@@ -59,6 +61,15 @@ Here are some stacked density plots, also known as a ridgeline plot of the avera
 
 ``` {r echo = FALSE, warning = FALSE}
 
+avg_by_year <- avg_temp_data %>%
+  mutate(year = year(date), month = month(date)) %>%
+  group_by(name, year) %>%
+  summarize(avg = mean(tavg))
 
+avg_by_year_plot <- ggplot(avg_by_year, aes(x = year, y = avg, color = name))
 
+avg_by_year_plot <- avg_by_year_plot +
+  geom_line()
+
+avg_by_year_plot
 ```

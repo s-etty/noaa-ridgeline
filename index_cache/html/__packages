@@ -8,3 +8,4 @@ leaflet
 leaflet.extras
 rnoaa
 purrr
+lubridate
