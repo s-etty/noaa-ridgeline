@@ -31,13 +31,20 @@ library(rnoaa)
 library(purrr)
 library(lubridate)
 library(ggplot2)
+library(tidyr)
+library(stringr)
+library(ggridges)
 
-avg_temp_data <- readr::read_csv('data/avg-temp-data.csv', col_names = TRUE)
+temp_data <- readr::read_csv('data/daily-temp-data.csv', col_names = TRUE)
 #pull in the data from the csv. To update run the get-data.r script in the data folder
 
-station_ids <- avg_temp_data %>%
-  distinct(avg_temp_data, id, .keep_all = TRUE) %>%
-  select(-c('date', 'tavg', 'distance'))
+temp_data <- temp_data %>%
+  mutate(tavg = (tmin+ tmax) / 2, year = year(date), month = month(date)) %>%
+  mutate(year_month = ymd(paste(year, month, "15", sep = "-")))
+
+station_ids <- temp_data %>%
+  distinct(temp_data, station, .keep_all = TRUE) %>%
+  select(-c('date', 'tmin', 'tmax'))
 #select the distinct station ids from the csv. only keep the id, name, lat, long
 
 ```
@@ -47,29 +54,43 @@ Below are the stations the weather data will be pulled from. Click on the points
 
 ``` {r echo = FALSE, warning = FALSE}
 station_map <- leaflet(station_ids) %>%
-  setView(lng = -122.6750, lat = 45.6081, zoom = 10) %>%
+  setView(lng = -122.6750, lat = 45.6081, zoom = 9) %>%
   addTiles() %>%
-  addMarkers(lat = ~latitude, lng = ~longitude, popup =  ~name, label = ~name) %>%
-  suspendScroll(sleep = TRUE, sleepTime = 2000, wakeTime = 1000)
-#create a map centered around portland. markers are the stations. suspendScroll is not working
+  addMarkers(lat = ~latitude, lng = ~longitude, 
+             popup = paste("Station Name: ", station_ids$name, "<br>",
+                           "Elevation: ", station_ids$elevation, " ft."),
+             label = station_ids$name) %>%
+  suspendScroll()
+#create a map centered around portland. markers are the stations. suspendScroll is working,
+#but when changing sleep time, it fails
 station_map
 ```
 
 # Average Temperature by Month
 
-Here are some stacked density plots, also known as a ridgeline plot of the average temperature each month over the years. The averages displayed are the averages from the four weather stations shown in the map.
+Here are is a stacked density plot (aka a ridgeline plot) of the average temperature each month over the years. The averages displayed are the averages from the number of weather stations shown in the map.
 
 ``` {r echo = FALSE, warning = FALSE}
 
-avg_by_year <- avg_temp_data %>%
-  mutate(year = year(date), month = month(date)) %>%
-  group_by(name, year) %>%
-  summarize(avg = mean(tavg))
+temp_data_melted <- gather(temp_data, key = 'measurement', value = 'temperature', 
+                           c(tmin, tmax, tavg))
+#pivot to long format for easier graphing. pivot along the tmin, tmax, tavg columns
 
-avg_by_year_plot <- ggplot(avg_by_year, aes(x = year, y = avg, color = name))
+avg_by_year <- temp_data_melted %>%
+  group_by(year, measurement) %>%
+  summarize(avg_temp = mean(temperature, na.rm = TRUE), 
+            max_monthly_temp = max(temperature),
+            min_monthly_temp = min(temperature))
+
+ridgeline_by_year <- ggplot(temp_data, aes(x = year, y = tavg)) +
+  geom_density_ridge()
+
+avg_by_year_plot <- ggplot(avg_by_year, aes(x = year, y = avg_temp))
 
 avg_by_year_plot <- avg_by_year_plot +
-  geom_line()
+  geom_line(aes(group = measurement, color = measurement))
+#seems to use a gradient color scale because year is a date type as opposed to a factor or char
+#when using char data it goes back to the rainbow color for groups
 
 avg_by_year_plot
 ```

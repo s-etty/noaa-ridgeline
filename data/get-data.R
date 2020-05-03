@@ -7,6 +7,7 @@
 library(rnoaa)
 library(dplyr)
 library(httr)
+library(reshape2)
 
 date_min <- '1980-01-01'
 date_max <- as.character(Sys.Date())
@@ -69,6 +70,10 @@ weather_data_melted <- tibble(melt(weather_data, id.vars = col_ids,
 #not sure this is needed now as I'm moving away from RNOAA package and a straight API call
 #add info about the station to the df. includes station name, lat, long, and distance from
 #portland's lat and long
+
+weather_data <- weather_data %>%
+  rename_at(names(weather_data), .funs = tolower)
+#convert column headers to lowercase
 
 write.csv(weather_data, file = 'data/daily-temp-data.csv')
 #write the data to a csv for faster reading of the data in other files. This script only has to be
