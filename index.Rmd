@@ -2,8 +2,8 @@
 title: "Changing Temperatures in Portland, OR"
 date: "Last Update: `r Sys.Date()`"
 output:
-  rmdformats::material:
-    highlight: kate
+    rmdformats::material:
+      highlight: kate
 ---
 
 
@@ -80,17 +80,48 @@ avg_by_year <- temp_data_melted %>%
   group_by(year, measurement) %>%
   summarize(avg_temp = mean(temperature, na.rm = TRUE), 
             max_monthly_temp = max(temperature),
-            min_monthly_temp = min(temperature))
+            min_monthly_temp = min(temperature)) %>%
+  filter(year != 2020)
 
-ridgeline_by_year <- ggplot(temp_data, aes(x = year, y = tavg)) +
-  geom_density_ridge()
+temp_data_no_2020 <- temp_data %>%
+  filter(year != 2020)
+```
+:::: {style='display: flex;'}
 
+::: {.column width="48%"}
+
+``` {r echo = FALSE, warning = FALSE}
+
+ridgeline_by_year <- ggplot(temp_data_no_2020, aes(x = tavg, y = year, group = year,
+                                                   fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 7, rel_min_height = 0.01) +
+  scale_fill_viridis_c(name = "Temp (F)", option = "C") +
+  labs(x = "Temperature (F)", y = "Year",
+       title = "Greater Portland Area Temperatures")
+ridgeline_by_year
+```
+
+:::
+
+:::{.column width="4%"}
+:::
+
+::: {.column width="48%"}
+
+``` {r echo = FALSE, warning = FALSE}
 avg_by_year_plot <- ggplot(avg_by_year, aes(x = year, y = avg_temp))
 
 avg_by_year_plot <- avg_by_year_plot +
-  geom_line(aes(group = measurement, color = measurement))
+  geom_line(aes(group = measurement, color = measurement)) +
+  geom_smooth(method = "lm") + 
+  labs(x = "Year", y = "Temperature (F)", color = "Measurement Type",
+       title = "Greater Portland Area Average Temperatures")
 #seems to use a gradient color scale because year is a date type as opposed to a factor or char
 #when using char data it goes back to the rainbow color for groups
 
 avg_by_year_plot
 ```
+
+:::
+
+::::
