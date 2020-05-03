@@ -8,3 +8,7 @@ leaflet
 leaflet.extras
 rnoaa
 purrr
+lubridate
+tidyr
+stringr
+ggridges
